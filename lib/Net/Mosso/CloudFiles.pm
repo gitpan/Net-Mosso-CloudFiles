@@ -4,7 +4,7 @@ use MooseX::StrictConstructor;
 use Net::Mosso::CloudFiles::Container;
 use Net::Mosso::CloudFiles::Object;
 use LWP;
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 my $DEBUG = 0;
 
@@ -48,9 +48,9 @@ sub BUILD {
 }
 
 sub request {
-    my ( $self, $request ) = @_;
+    my ( $self, $request, $filename ) = @_;
     warn $request->as_string if $DEBUG;
-    my $response = $self->ua->request($request);
+    my $response = $self->ua->request($request, $filename);
     warn $response->as_string if $DEBUG;
     return $response;
 }
@@ -148,6 +148,10 @@ Net::Mosso::CloudFiles - Interface to Mosso CloudFiles service
   say 'has size ' . $object->size;
   say 'has md5 ' . $object->md5;
   say 'has value ' . $object->value;
+
+  # get and put to files
+  $container->put_filename('README', 'README');
+  $container->object('README')->value_to_filename('README.new');
 
   $object->delete;
 
