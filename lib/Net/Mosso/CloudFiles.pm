@@ -1,10 +1,13 @@
 package Net::Mosso::CloudFiles;
 use Moose;
 use MooseX::StrictConstructor;
+use Data::Stream::Bulk::Callback;
 use Net::Mosso::CloudFiles::Container;
 use Net::Mosso::CloudFiles::Object;
+use LWP::ConnCache::MaxKeepAliveRequests;
 use LWP::UserAgent::Determined;
-our $VERSION = '0.34';
+use URI::QueryParam;
+our $VERSION = '0.35';
 
 my $DEBUG = 0;
 
@@ -25,11 +28,23 @@ sub BUILD {
         requests_redirectable => [qw(GET HEAD DELETE PUT)],
     );
     $ua->timing('1,2,4,8,16,32');
+    $ua->conn_cache(
+        LWP::ConnCache::MaxKeepAliveRequests->new(
+            total_capacity          => 10,
+            max_keep_alive_requests => 990,
+        )
+    );
     my $http_codes_hr = $ua->codes_to_determinate();
     $http_codes_hr->{422} = 1; # used by cloudfiles for upload data corruption
     $ua->timeout( $self->timeout );
     $ua->env_proxy;
     $self->ua($ua);
+
+    $self->_authenticate;
+}
+
+sub _authenticate {
+    my $self = shift;
 
     my $request = HTTP::Request->new(
         'GET',
@@ -57,6 +72,19 @@ sub request {
     warn $request->as_string if $DEBUG;
     my $response = $self->ua->request( $request, $filename );
     warn $response->as_string if $DEBUG;
+    if ( $response->code == 401 && $request->header('X-Auth-Token') ) {
+
+        # http://trac.cyberduck.ch/ticket/2876
+        # Be warned that the token will expire over time (possibly as short
+        # as an hour). The application should trap a 401 (Unauthorized)
+        # response on a given request (to either storage or cdn system)
+        # and then re-authenticate to obtain an updated token.
+        $self->_authenticate;
+        $request->header( 'X-Auth-Token', $self->token );
+        warn $request->as_string if $DEBUG;
+        $response = $self->ua->request( $request, $filename );
+        warn $response->as_string if $DEBUG;
+    }
     return $response;
 }
 
@@ -142,10 +170,12 @@ Net::Mosso::CloudFiles - Interface to Mosso CloudFiles service
   my $bytes_used = $container->bytes_used;
   say "$bytes_used bytes";
 
-  my @objects = $container->objects;
+  # returns a Data::Stream::Bulk object
+  my @objects = $container->objects->all;
   foreach my $object (@objects) {
       say 'have object ' . $object->name;
   }
+  my @objects2 = $container->objects(prefix => 'dir/')->all;
 
   $container->put( 'XXX', 'YYY' );
 

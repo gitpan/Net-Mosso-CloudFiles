@@ -55,25 +55,38 @@ sub delete {
 }
 
 sub objects {
-    my $self = shift;
+    my ( $self, %args ) = @_;
 
-    # limit, offset, prefix
-    my $request = HTTP::Request->new( 'GET', $self->url,
-        [ 'X-Auth-Token' => $self->cloudfiles->token ] );
-    my $response = $self->cloudfiles->request($request);
-    return if $response->code == 204;
-    confess 'Unknown error' if $response->code != 200;
-    my @objects;
+    my $limit  = 10_000;
+    my $offset = 0;
+    my $prefix = $args{prefix};
 
-    foreach my $name ( split "\n", $response->content ) {
-        push @objects,
-            Net::Mosso::CloudFiles::Object->new(
-            cloudfiles => $self->cloudfiles,
-            container  => $self,
-            name       => $name,
-            );
-    }
-    return @objects;
+    return Data::Stream::Bulk::Callback->new(
+        callback => sub {
+            my $url = URI->new( $self->url );
+            $url->query_param( 'limit',  $limit );
+            $url->query_param( 'offset', $offset );
+            $url->query_param( 'prefix', $prefix );
+            my $request = HTTP::Request->new( 'GET', $url,
+                [ 'X-Auth-Token' => $self->cloudfiles->token ] );
+            my $response = $self->cloudfiles->request($request);
+            return if $response->code == 204;
+            confess 'Unknown error' if $response->code != 200;
+            return undef unless $response->content;
+            my @objects;
+
+            foreach my $name ( split "\n", $response->content ) {
+                push @objects,
+                    Net::Mosso::CloudFiles::Object->new(
+                    cloudfiles => $self->cloudfiles,
+                    container  => $self,
+                    name       => $name,
+                    );
+            }
+            $offset += scalar(@objects);
+            return \@objects;
+        }
+    );
 }
 
 sub put {
