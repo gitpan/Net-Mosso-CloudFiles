@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Net-Mosso-CloudFiles
-version:             0.40
+version:             0.41
 abstract:            Interface to Mosso CloudFiles service
 license:             perl
 author:              
