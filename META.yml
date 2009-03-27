@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Net-Mosso-CloudFiles
-version:             0.41
+version:             0.42
 abstract:            Interface to Mosso CloudFiles service
 license:             perl
 author:              
@@ -8,6 +8,7 @@ author:
 generated_by:        ExtUtils::MakeMaker version 6.44
 distribution_type:   module
 requires:     
+    Crypt::SSLeay:                 0
     Data::Stream::Bulk:            0
     DateTime::Format::HTTP:        0
     Digest::MD5:                   0
