@@ -1,26 +1,34 @@
 --- #YAML:1.0
-name:                Net-Mosso-CloudFiles
-version:             0.43
-abstract:            Interface to Mosso CloudFiles service
-license:             perl
-author:              
+name:               Net-Mosso-CloudFiles
+version:            0.44
+abstract:           Interface to Mosso CloudFiles service
+author:
     - Leon Brocard <acme@astray.com>
-generated_by:        ExtUtils::MakeMaker version 6.42
-distribution_type:   module
-requires:     
-    Crypt::SSLeay:                 0
-    Data::Stream::Bulk:            0
-    DateTime::Format::HTTP:        0
-    Digest::MD5:                   0
-    Digest::MD5::File:             0
-    File::Slurp:                   0
-    JSON::XS::VersionOneAndTwo:    0
-    LWP:                           0
-    LWP::ConnCache::MaxKeepAliveRequests: 0
-    LWP::UserAgent::Determined:    0
-    Moose:                         0
-    MooseX::StrictConstructor:     0
-    Test::Exception:               0
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Crypt::SSLeay:        0
+    Data::Stream::Bulk:   0
+    DateTime::Format::HTTP:  0
+    Digest::MD5:          0
+    Digest::MD5::File:    0
+    File::Slurp:          0
+    JSON::XS::VersionOneAndTwo:  0
+    LWP:                  0
+    LWP::ConnCache::MaxKeepAliveRequests:  0
+    LWP::UserAgent::Determined:  0
+    Moose:                0
+    MooseX::StrictConstructor:  0
+    Test::Exception:      0
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.55_02
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
